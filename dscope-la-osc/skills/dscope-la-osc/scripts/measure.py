@@ -16,7 +16,9 @@ import subprocess
 import sys
 import time
 
-TOOLS = os.environ.get("HIL_TOOLS", r"C:\Users\yukai\hil-tools")
+# 采集栈解析：HIL_TOOLS 环境变量（自管部署）→ 插件自带 assets/hil-tools
+_SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TOOLS = os.environ.get("HIL_TOOLS") or os.path.join(_SKILL_DIR, "assets", "hil-tools")
 sys.path.insert(0, os.path.join(TOOLS, "pyhil"))
 
 import numpy as np  # noqa: E402
@@ -34,7 +36,16 @@ def check(name, ok, detail):
 
 
 def out_dir():
-    d = os.environ.get("HIL_OUT_DIR") or os.path.join(TOOLS, "captures")
+    """数据输出目录：HIL_OUT_DIR → 自管部署的 <HIL_TOOLS>/captures →
+    %LOCALAPPDATA%\\hil-tools\\captures（内置部署不写进插件缓存目录，
+    插件更新会清掉缓存）。"""
+    if os.environ.get("HIL_OUT_DIR"):
+        d = os.environ["HIL_OUT_DIR"]
+    elif os.environ.get("HIL_TOOLS"):
+        d = os.path.join(os.environ["HIL_TOOLS"], "captures")
+    else:
+        d = os.path.join(os.environ.get("LOCALAPPDATA") or os.path.expanduser("~"),
+                         "hil-tools", "captures")
     os.makedirs(d, exist_ok=True)
     return d
 

@@ -5,11 +5,19 @@ description: 驱动 DSLogic Plus 逻辑分析仪和 DSCope U3P100 示波器做�
 
 # HIL 仪器采集测量（DSLogic Plus + DSCope U3P100）
 
-采集栈部署路径由环境变量 `HIL_TOOLS` 指定，默认 `C:\Users\yukai\hil-tools\`
-（pyhil 包 + bin/ds-capture.exe，自包含）。换机器/换用户时先设置
-`HIL_TOOLS=<采集栈路径>` 再使用本 skill。下文用 `<SKILL_DIR>` 指代本 skill
-的安装基目录（skill 加载时会给出 "Base directory"，scripts、references
-都相对它解析）。设备通过名字自动发现，无需关心 USB 索引。
+采集栈**随插件自带**（`<SKILL_DIR>\assets\hil-tools\`：pyhil 包 +
+bin/ds-capture.exe + 运行 DLL，自包含），装好插件即可用，无需单独部署：
+
+1. 设置了环境变量 `HIL_TOOLS`（自管部署，指向含 `pyhil\`+`bin\` 的目录）时优先用它
+2. 未设置则用插件内置副本；采集数据默认落
+   `%LOCALAPPDATA%\hil-tools\captures`（可用 `HIL_OUT_DIR` 覆盖）——
+   **不要**写进插件缓存目录（插件更新时会被清掉）
+
+前置依赖只有两个：DSView 安装在常见路径（解码器目录自动发现，任意盘符皆可；
+非标准位置时设 `DSVIEW_DIR=<DSView安装目录>`）和 Python 包 numpy。
+下文用 `<SKILL_DIR>` 指代本 skill 的安装基目录（skill 加载时会给出
+"Base directory"，scripts、references 都相对它解析）。设备通过名字自动发现，
+无需关心 USB 索引。
 
 ## WSL 侧调用（跨边界执行）
 
@@ -32,13 +40,14 @@ powershell.exe -NoProfile -Command "python '<SKILL_DIR>\scripts\measure.py' la -
 1. **cmd.exe 的 UNC 警告无害**：WSL 工程目录（/home/...）对 cmd.exe 是 UNC
    路径，会警告并回退 Windows 目录，参数全是绝对路径时不受影响；
    powershell.exe 无此问题
-2. **Python API 场景**：临时脚本写到 Windows 侧再执行（以默认路径为例：
-   `/mnt/c/Users/yukai/hil-tools/run_tmp.py` →
-   `cmd.exe /c "python %HIL_TOOLS%\run_tmp.py"`），避免让
-   Windows python 从 `\\wsl.localhost` 路径加载脚本
-3. **结果读取**：captures 固定落在 `%HIL_TOOLS%\captures`
-   （默认 `C:\Users\yukai\hil-tools\captures`，WSL 读
-   `/mnt/c/Users/yukai/hil-tools/captures`）；要把 WSL 工程文件传给
+2. **Python API 场景**：临时脚本写到 Windows 侧数据目录再执行，避免让
+   Windows python 从 `\\wsl.localhost` 路径加载脚本。WSL 与 Windows 路径互转
+   用 `wslpath`：先取 Windows 侧数据目录（`WIN=$(cmd.exe /c 'echo %LOCALAPPDATA%\hil-tools' | tr -d '\r')`），
+   `wslpath -u "$WIN"` 得 WSL 侧路径用于写入 `run_tmp.py`，再
+   `cmd.exe /c "python <WIN路径>\run_tmp.py"` 执行
+3. **结果读取**：captures 固定落在数据目录（默认
+   `%LOCALAPPDATA%\hil-tools\captures`，WSL 侧用 `wslpath -u` 换算；
+   设置了 `HIL_TOOLS` 则为 `%HIL_TOOLS%\captures`）；要把 WSL 工程文件传给
    Windows 程序，用 `wslpath -w <路径>` 转成 UNC 形式传参（Windows 程序可写
    UNC 路径）
 
@@ -95,7 +104,7 @@ python "...measure.py" la --ch 0 --protocol can --pd-opt "bitrate_config=..."  #
 
 ```python
 import os, sys
-TOOLS = os.environ.get("HIL_TOOLS", r"C:\Users\yukai\hil-tools")  # 换机器时设置 HIL_TOOLS
+TOOLS = os.environ.get("HIL_TOOLS") or r"<SKILL_DIR>\assets\hil-tools"  # 插件内置副本
 sys.path.insert(0, os.path.join(TOOLS, "pyhil"))
 
 from hil.instrument import DSLogicLA, DSCopeScope, dsview_running, usb_reset
@@ -151,6 +160,7 @@ report.generate(os.path.join(TOOLS, "captures", "report.md"), "测试标题")
 
 ## 数据位置
 
-采集数据（.raw/.json 对）落在 `out_dir`（默认 `hil-tools\captures`）。
+采集数据（.raw/.json 对）落在数据目录：默认 `%LOCALAPPDATA%\hil-tools\captures`；
+设置了 `HIL_TOOLS` 时为其下 `captures`；`HIL_OUT_DIR` 可整体覆盖。
 `.json` 记录本次实际生效的全部配置；`load_capture(prefix)` 重新加载分析。
 DSView 保存的 .dsl 会话也可解析：`load_capture(path去掉.dsl)`。

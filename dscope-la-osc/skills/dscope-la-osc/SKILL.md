@@ -13,8 +13,14 @@ bin/ds-capture.exe + 运行 DLL，自包含），装好插件即可用，无需�
    `%LOCALAPPDATA%\hil-tools\captures`（可用 `HIL_OUT_DIR` 覆盖）——
    **不要**写进插件缓存目录（插件更新时会被清掉）
 
-前置依赖只有两个：DSView 安装在常见路径（解码器目录自动发现，任意盘符皆可；
-非标准位置时设 `DSVIEW_DIR=<DSView安装目录>`）和 Python 包 numpy。
+前置依赖只有 **Python 包 numpy**（matplotlib 仅报告绘图需要）：
+
+- 采集栈（pyhil + ds-capture.exe + DLL）和解码器（DSView 官方 149 个协议
+  解码脚本）都随插件内置在 `<SKILL_DIR>\assets\hil-tools\`，**无需安装 DSView**
+  即可采集与协议解码（DSView 反而会独占 USB，采集时必须处于关闭状态；
+  只有用户自己想开 GUI 看波形才需要装它）
+- 解码器目录解析：`DSVIEW_DIR` 环境变量（显式指向某 DSView 安装目录）→
+  插件内置副本 → 已安装的 DSView（任意盘符自动扫描）
 下文用 `<SKILL_DIR>` 指代本 skill 的安装基目录（skill 加载时会给出
 "Base directory"，scripts、references 都相对它解析）。设备通过名字自动发现，
 无需关心 USB 索引。

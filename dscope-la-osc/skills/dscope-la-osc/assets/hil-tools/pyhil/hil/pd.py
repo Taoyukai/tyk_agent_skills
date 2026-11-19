@@ -28,14 +28,23 @@ import types
 import numpy as np
 
 def _find_dsview_decoders():
-    """Locate DSView's decoders dir: DSVIEW_DIR env → common install roots.
+    """Locate protocol decoder scripts, in priority order:
 
-    DSView may be installed on any drive (e.g. C:\\Program Files\\DSView or
-    D:\\Program Files\\DSView); scan existing fixed drives before giving up.
+    1. DSVIEW_DIR env (explicit override, points at a DSView install dir)
+    2. bundled copy at <HIL_ROOT>/decoders — ships with the plugin, so
+       decoding works without DSView installed; also keeps behavior
+       consistent when DSView happens to be installed
+    3. an installed DSView on any drive (fallback for self-managed
+       HIL_TOOLS deployments without the bundled decoders)
     """
     env = os.environ.get("DSVIEW_DIR")
     if env:
         return os.path.join(env, "decoders")
+    bundled = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        "decoders")
+    if os.path.isdir(bundled):
+        return bundled
     drives = [d for d in "CDEFGH" if os.path.exists(f"{d}:\\")]
     cands = [rf"{d}:\{base}\DSView\decoders"
              for d in drives
@@ -44,7 +53,7 @@ def _find_dsview_decoders():
     for c in cands:
         if os.path.isdir(c):
             return c
-    return r"C:\Program Files\DSView\decoders"
+    return bundled
 
 
 DEFAULT_DECODERS_ROOT = _find_dsview_decoders()

@@ -259,7 +259,7 @@ def pd_protocol_list():
     from hil.pd import DEFAULT_DECODERS_ROOT
     root = DEFAULT_DECODERS_ROOT
     if not os.path.isdir(root):
-        print(f"未找到解码器目录: {root}（需安装 DSView）")
+        print(f"未找到解码器目录: {root}（正常随插件内置；自管部署可安装 DSView 或设 DSVIEW_DIR 指向其安装目录）")
         return
     names = sorted(os.listdir(root))
     print(f"官方解码器 {len(names)} 个（{root}）:")

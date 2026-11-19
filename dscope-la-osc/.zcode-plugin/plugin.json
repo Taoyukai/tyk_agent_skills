@@ -1,0 +1,22 @@
+{
+  "name": "dscope-la-osc",
+  "version": "0.1.0",
+  "description": "Drive DSLogic Plus logic analyzer and DSCope U3P100 oscilloscope for hardware signal capture and measurement: Vpp, frequency, duty cycle, amplitude, noise, edge rate, DSHOT/PWM/UART/I2C/SPI/CAN decoding, and automated assertion reports for HIL testing.",
+  "description_i18n": {
+    "zh-CN": "驱动 DSLogic Plus 逻辑分析仪和 DSCope U3P100 示波器做硬件信号采集与测量：Vpp/峰峰值、频率、占空比、幅值、噪声、沿速、DSHOT/PWM/UART/I2C/SPI/CAN 协议解码，以及 HIL 测试自动断言报告。"
+  },
+  "author": {
+    "name": "yukai"
+  },
+  "license": "MIT",
+  "keywords": [
+    "oscilloscope",
+    "logic-analyzer",
+    "DSLogic",
+    "DSCope",
+    "signal-measurement",
+    "hil",
+    "hardware"
+  ],
+  "skills": "skills"
+}

@@ -1,2 +1,5 @@
 __pycache__/
 *.pyc
+
+# Dev source trees stay local-only, never uploaded to GitHub
+dscope-la-osc/source/

@@ -3,3 +3,6 @@ __pycache__/
 
 # Dev source trees stay local-only, never uploaded to GitHub
 dscope-la-osc/source/
+
+# ZCode workspace-local settings
+.zcode/

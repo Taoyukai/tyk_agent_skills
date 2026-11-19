@@ -1,6 +1,6 @@
 {
-  "name": "dev-dscope-la-osc",
-  "description": "Local dev marketplace for testing the dscope-la-osc plugin before sharing.",
+  "name": "tyk-agent-skills",
+  "description": "Taoyukai's ZCode agent skills collection: reusable plugins for hardware instrumentation (oscilloscope / logic analyzer HIL testing) and more.",
   "plugins": [
     {
       "name": "dscope-la-osc",
